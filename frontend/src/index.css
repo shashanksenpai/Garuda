@@ -1,0 +1,660 @@
+/* ============================================================
+   GARUDA — design tokens
+   Direction: graphite console, severity spectrum as the structural
+   color device (slate -> cyan -> amber -> orange -> red), Inter for
+   UI text, monospace for telemetry data (IPs, ports, timestamps, ids).
+   ============================================================ */
+:root {
+  --bg: #10131a;
+  --bg-panel: #161a23;
+  --bg-panel-raised: #1c212c;
+  --bg-inset: #0c0e13;
+  --border: #262c3a;
+  --border-soft: #1e2330;
+
+  --text: #e7eaf2;
+  --text-dim: #9aa2b6;
+  --text-faint: #5d6479;
+
+  --sev-info: #64748b;
+  --sev-low: #22c3d6;
+  --sev-medium: #e0a730;
+  --sev-high: #f2793a;
+  --sev-critical: #ef4b57;
+
+  --accent: #3ecfe0;
+  --accent-dim: #1c5a63;
+
+  --radius: 3px;
+  --font-ui: "Inter", -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", "SF Mono", "Cascadia Code", Menlo, Consolas, monospace;
+}
+
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+}
+button, input, select { font-family: inherit; }
+
+::selection { background: var(--accent-dim); color: var(--text); }
+
+/* ============================================================
+   App shell
+   ============================================================ */
+.app-shell {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  height: 100vh;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  padding: 0 20px;
+  height: 56px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-panel);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  font-size: 15px;
+  white-space: nowrap;
+}
+.brand-mark {
+  width: 20px; height: 20px;
+  flex-shrink: 0;
+}
+.brand-sub {
+  color: var(--text-faint);
+  font-weight: 400;
+  font-size: 12px;
+  border-left: 1px solid var(--border);
+  padding-left: 10px;
+  margin-left: 2px;
+}
+
+.topbar-stats {
+  display: flex;
+  gap: 22px;
+  margin-left: auto;
+  font-family: var(--font-mono);
+}
+.topbar-stat { display: flex; flex-direction: column; gap: 1px; align-items: flex-end; }
+.topbar-stat-label { color: var(--text-faint); font-size: 10.5px; letter-spacing: 0.3px; }
+.topbar-stat-value { font-size: 15px; font-weight: 600; }
+
+.live-toggle {
+  display: flex; align-items: center; gap: 10px;
+}
+.live-select {
+  background: var(--bg-inset);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 6px 10px;
+  border-radius: var(--radius);
+  font-size: 12.5px;
+}
+.live-btn {
+  border: 1px solid var(--border);
+  background: var(--bg-inset);
+  color: var(--text);
+  padding: 6px 14px;
+  border-radius: var(--radius);
+  font-size: 12.5px;
+  cursor: pointer;
+  transition: border-color 120ms ease;
+}
+.live-btn:hover { border-color: var(--accent); }
+.live-btn.stop { color: var(--sev-critical); border-color: color-mix(in srgb, var(--sev-critical) 40%, var(--border)); }
+
+.pulse-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--text-faint);
+  position: relative;
+  flex-shrink: 0;
+}
+.pulse-dot.on { background: var(--accent); }
+.pulse-dot.on::after {
+  content: "";
+  position: absolute; inset: -4px;
+  border-radius: 50%;
+  border: 1px solid var(--accent);
+  animation: pulse-ring 1.6s ease-out infinite;
+}
+@keyframes pulse-ring {
+  0% { transform: scale(0.6); opacity: 0.9; }
+  100% { transform: scale(1.9); opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pulse-dot.on::after { animation: none; }
+}
+
+/* ============================================================
+   Layout: main grid
+   ============================================================ */
+.main-grid {
+  display: grid;
+  grid-template-columns: 340px 1fr 380px;
+  min-height: 0;
+}
+@media (max-width: 1100px) {
+  .main-grid { grid-template-columns: 1fr; }
+}
+
+.col {
+  min-height: 0;
+  overflow-y: auto;
+  border-right: 1px solid var(--border);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.col:last-child { border-right: none; }
+
+.panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.panel-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.panel-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-dim);
+  letter-spacing: 0.2px;
+}
+.panel-body { padding: 12px; }
+
+/* ============================================================
+   Severity chip / bar
+   ============================================================ */
+.sev-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+}
+.sev-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.sev-info { color: var(--sev-info); }
+.sev-low { color: var(--sev-low); }
+.sev-medium { color: var(--sev-medium); }
+.sev-high { color: var(--sev-high); }
+.sev-critical { color: var(--sev-critical); }
+
+/* ============================================================
+   Risk gauge
+   ============================================================ */
+.risk-gauge { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 8px 0 2px; }
+.risk-gauge-value { font-family: var(--font-mono); font-size: 34px; font-weight: 700; line-height: 1; }
+.risk-gauge-label { font-size: 11px; color: var(--text-faint); letter-spacing: 0.3px; }
+.risk-gauge-track {
+  width: 100%; height: 6px; border-radius: 3px;
+  background: var(--bg-inset);
+  overflow: hidden;
+  margin-top: 4px;
+}
+.risk-gauge-fill { height: 100%; border-radius: 3px; transition: width 400ms ease; }
+
+/* ============================================================
+   Live event stream
+   ============================================================ */
+.event-stream { display: flex; flex-direction: column; gap: 0; max-height: 100%; overflow-y: auto; }
+.event-row {
+  display: grid;
+  grid-template-columns: 62px 16px 1fr;
+  gap: 8px;
+  align-items: baseline;
+  padding: 5px 0;
+  border-bottom: 1px solid var(--border-soft);
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+}
+.event-row:last-child { border-bottom: none; }
+.event-time { color: var(--text-faint); }
+.event-bullet { color: currentColor; }
+.event-msg { color: var(--text-dim); overflow-wrap: anywhere; }
+.event-msg b { color: var(--text); font-weight: 600; }
+
+.empty-hint {
+  color: var(--text-faint);
+  font-size: 12px;
+  padding: 18px 4px;
+  text-align: center;
+  line-height: 1.6;
+}
+
+/* ============================================================
+   Incident list
+   ============================================================ */
+.incident-card {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: var(--bg-panel-raised);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--sev-info);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  cursor: pointer;
+  color: var(--text);
+  transition: border-color 120ms ease, background 120ms ease;
+}
+.incident-card:hover { background: #202634; }
+.incident-card.selected { border-color: var(--accent); }
+.incident-card-top { display: flex; justify-content: space-between; gap: 8px; align-items: flex-start; }
+.incident-card-title { font-size: 12.5px; font-weight: 600; line-height: 1.4; }
+.incident-card-risk { font-family: var(--font-mono); font-size: 15px; font-weight: 700; flex-shrink: 0; }
+.incident-card-meta { display: flex; gap: 10px; margin-top: 6px; font-family: var(--font-mono); font-size: 10.5px; color: var(--text-faint); }
+
+/* ============================================================
+   Incident detail
+   ============================================================ */
+.detail-section { margin-bottom: 18px; }
+.detail-section:last-child { margin-bottom: 0; }
+.detail-label {
+  font-size: 11px; font-weight: 600; color: var(--text-faint);
+  letter-spacing: 0.3px; margin-bottom: 8px;
+}
+.detail-summary { font-size: 13px; line-height: 1.65; color: var(--text-dim); }
+
+.kv-grid { display: grid; grid-template-columns: auto 1fr; gap: 5px 12px; font-size: 12px; }
+.kv-grid dt { color: var(--text-faint); }
+.kv-grid dd { margin: 0; font-family: var(--font-mono); color: var(--text); overflow-wrap: anywhere; }
+
+.timeline { display: flex; flex-direction: column; }
+.timeline-item { display: grid; grid-template-columns: 18px 1fr; gap: 10px; padding-bottom: 14px; position: relative; }
+.timeline-item:last-child { padding-bottom: 0; }
+.timeline-rail { position: relative; display: flex; justify-content: center; }
+.timeline-node { width: 8px; height: 8px; border-radius: 50%; background: currentColor; margin-top: 3px; z-index: 1; }
+.timeline-item:not(:last-child) .timeline-rail::after {
+  content: ""; position: absolute; top: 11px; bottom: -14px; width: 1px; background: var(--border);
+}
+.timeline-time { font-family: var(--font-mono); font-size: 10.5px; color: var(--text-faint); }
+.timeline-desc { font-size: 12.5px; color: var(--text-dim); line-height: 1.5; margin-top: 2px; }
+
+.chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.tech-chip {
+  font-family: var(--font-mono); font-size: 10.5px;
+  border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 3px 7px; color: var(--text-dim);
+}
+.tech-chip b { color: var(--accent); font-weight: 600; }
+
+.action-group { margin-bottom: 12px; }
+.action-group:last-child { margin-bottom: 0; }
+.action-group-title { font-size: 11px; font-weight: 600; margin-bottom: 6px; }
+.action-list { margin: 0; padding-left: 16px; font-size: 12px; color: var(--text-dim); line-height: 1.6; }
+
+.report-btn {
+  width: 100%;
+  padding: 9px 12px;
+  background: var(--bg-inset);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: var(--radius);
+  font-size: 12.5px;
+  cursor: pointer;
+  margin-top: 4px;
+}
+.report-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+.status-tag {
+  font-family: var(--font-mono); font-size: 10.5px;
+  color: var(--text-faint);
+  border: 1px solid var(--border);
+  padding: 2px 7px;
+  border-radius: 999px;
+}
+
+/* ============================================================
+   Charts panel
+   ============================================================ */
+.chart-panel { padding: 10px 4px 4px; }
+
+/* ============================================================
+   View switch (Console / Topology & Response)
+   ============================================================ */
+.view-switch {
+  display: flex;
+  gap: 2px;
+  background: var(--bg-inset);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 2px;
+}
+.view-switch-btn {
+  border: none;
+  background: transparent;
+  color: var(--text-dim);
+  padding: 6px 12px;
+  border-radius: 2px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.view-switch-btn.active {
+  background: var(--bg-panel-raised);
+  color: var(--accent);
+}
+
+/* ============================================================
+   Topology view layout
+   ============================================================ */
+.topology-grid {
+  grid-template-columns: 1fr 360px;
+}
+.topology-col {
+  flex: 1;
+  min-height: 0;
+}
+
+/* ============================================================
+   Network topology map (reactflow)
+   ============================================================ */
+.topo-map {
+  flex: 1;
+  min-height: 260px;
+}
+.topo-map .react-flow__background { background: var(--bg-inset); }
+.topo-map .react-flow__controls {
+  background: var(--bg-panel-raised);
+  border: 1px solid var(--border);
+  box-shadow: none;
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.topo-map .react-flow__controls-button {
+  background: var(--bg-panel-raised);
+  border-bottom: 1px solid var(--border-soft);
+  fill: var(--text-dim);
+}
+.topo-map .react-flow__controls-button:hover { background: var(--bg-panel); }
+.topo-map .react-flow__minimap {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.topo-map .react-flow__attribution { display: none; }
+
+/* reactflow sets pointer-events: none on non-draggable/non-selectable nodes by
+   default (we intentionally disable both — this topology isn't meant to be
+   rearranged) which would silently also kill hover; force it back on so the
+   hover metadata card still works. */
+.topo-map .react-flow__node { pointer-events: auto; }
+
+.topo-node {
+  background: var(--bg-panel-raised);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 6px 9px;
+  width: 148px;
+  font-family: var(--font-mono);
+  box-shadow: 0 1px 0 rgba(0,0,0,0.2);
+  pointer-events: auto;
+}
+.topo-node-external {
+  border-style: dashed;
+  background: var(--bg-inset);
+  opacity: 0.85;
+}
+.topo-node-highlighted {
+  box-shadow: 0 0 0 2px var(--sev-critical), 0 0 12px color-mix(in srgb, var(--sev-critical) 50%, transparent);
+}
+.topo-node-pulse { animation: topo-pulse 1.6s ease-in-out infinite; }
+@keyframes topo-pulse {
+  0%, 100% { box-shadow: 0 0 0 2px var(--sev-critical), 0 0 6px color-mix(in srgb, var(--sev-critical) 40%, transparent); }
+  50% { box-shadow: 0 0 0 4px var(--sev-critical), 0 0 16px color-mix(in srgb, var(--sev-critical) 70%, transparent); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .topo-node-pulse { animation: none; }
+}
+.topo-node-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 3px; }
+.topo-node-type { font-size: 9.5px; color: var(--text-faint); letter-spacing: 0.3px; }
+.topo-node-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.topo-node-name { font-size: 10.5px; color: var(--text); font-weight: 600; line-height: 1.3; overflow-wrap: anywhere; }
+.topo-node-ip { font-size: 9.5px; color: var(--text-faint); margin-top: 2px; }
+
+/* Live (agent-reported) devices and roles */
+.topo-node-dynamic { border-width: 2px; }
+.topo-node-badges { display: flex; gap: 4px; margin-top: 4px; flex-wrap: wrap; }
+.topo-role-badge {
+  font-size: 8px; letter-spacing: 0.4px; padding: 1px 5px; border-radius: 999px;
+  border: 1px solid currentColor; text-transform: uppercase;
+}
+.topo-role-live { color: var(--accent); }
+.topo-role-enterprise { color: var(--sev-low); }
+.topo-role-attacker { color: var(--sev-critical); }
+.topo-node-attacker { border-style: dashed; }
+.topo-node-attacker.topo-node-pulse { animation-name: topo-pulse-attacker; }
+@keyframes topo-pulse-attacker {
+  0%, 100% { box-shadow: 0 0 0 2px var(--sev-critical), 0 0 6px color-mix(in srgb, var(--sev-critical) 45%, transparent); }
+  50% { box-shadow: 0 0 0 5px var(--sev-critical), 0 0 20px color-mix(in srgb, var(--sev-critical) 80%, transparent); }
+}
+.topo-node-offline { opacity: 0.45; filter: grayscale(0.6); }
+.topo-node-pinned { box-shadow: 0 0 0 2px var(--accent), 0 0 10px color-mix(in srgb, var(--accent) 50%, transparent); }
+
+/* Live activity ring — grows/brightens with recent packet throughput touching this node */
+.topo-node-activity-ring {
+  position: absolute; inset: -6px;
+  border-radius: calc(var(--radius) + 6px);
+  border: 1.5px solid var(--accent);
+  opacity: calc(var(--activity, 0) * 0.6);
+  transform: scale(calc(1 + var(--activity, 0) * 0.06));
+  transition: opacity 300ms ease, transform 300ms ease;
+  pointer-events: none;
+}
+
+/* Node hover metadata card — portaled to document.body (see NetworkTopologyMap.jsx)
+   and positioned via fixed left/top computed from the node's real screen rect, so it
+   can't be clipped by reactflow's overflow:hidden container or buried under a
+   sibling node's stacking context (both happened when it rendered inline). */
+.topo-node { position: relative; }
+.topo-map .react-flow__node:hover { z-index: 1000 !important; }
+.topo-hover-card {
+  position: fixed; width: 270px; max-height: min(420px, calc(100vh - 24px)); z-index: 2000;
+  background: var(--bg-panel-raised); border: 1.5px solid var(--accent); border-radius: var(--radius);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.6);
+  padding: 14px 16px;
+  text-align: left;
+  overflow-y: auto;
+  pointer-events: none;
+}
+/* Pinned (click-to-open) cards stay open regardless of hover, so they're safe to
+   make interactive/scrollable — unpinned hover cards stay pointer-events:none so
+   they never trap the mouse and cause themselves to disappear on approach. */
+.topo-hover-card-pinned { pointer-events: auto; border-color: var(--accent); box-shadow: 0 12px 36px rgba(0,0,0,0.7), 0 0 0 1px var(--accent); }
+.topo-hover-title {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  font-size: 14.5px; font-weight: 700; color: var(--text);
+  position: sticky; top: -14px; z-index: 2; background: var(--bg-panel-raised);
+  margin: -14px -16px 8px; padding: 14px 16px 8px;
+  border-bottom: 1px solid var(--border-soft);
+}
+.topo-hover-close {
+  background: transparent; border: 1px solid var(--border); color: var(--text-faint);
+  border-radius: var(--radius); width: 22px; height: 22px; line-height: 1; font-size: 15px;
+  cursor: pointer; flex-shrink: 0;
+}
+.topo-hover-close:hover { color: var(--text); border-color: var(--accent); }
+.topo-hover-grid { grid-template-columns: 76px 1fr; font-size: 12.5px; gap: 6px 12px; }
+.topo-hover-subtitle { font-size: 11px; font-weight: 600; color: var(--text-faint); letter-spacing: 0.3px; margin: 10px 0 5px; }
+.topo-hover-proc-list { margin: 0; padding-left: 16px; font-size: 12px; color: var(--text-dim); line-height: 1.7; }
+.topo-hover-proc-meta { color: var(--text-faint); }
+.topo-hover-subtitle-attacker { color: var(--sev-critical); }
+.topo-hover-reason-list { margin: 0; padding-left: 16px; font-size: 12px; color: var(--text-dim); line-height: 1.6; }
+.topo-hover-reason-list li { margin-bottom: 6px; }
+.topo-hover-reason-list b { color: var(--sev-critical); }
+
+.fleet-destinations-list { margin: 8px 0 0; padding-left: 14px; font-size: 11.5px; color: var(--text-dim); line-height: 1.7; font-family: var(--font-mono); }
+
+/* Live packet dots — a fixed CSS keyframe animated via per-dot custom properties,
+   rendered inside a manually viewport-transformed overlay (NetworkTopologyMap applies
+   the same pan/zoom transform reactflow uses internally, since ViewportPortal isn't
+   available in this reactflow version). */
+.topo-packet-layer { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 4; }
+.topo-packet-viewport { position: absolute; top: 0; left: 0; transform-origin: 0 0; }
+.packet-dot {
+  position: absolute; top: 0; left: 0;
+  width: var(--dot-size); height: var(--dot-size);
+  margin-left: calc(var(--dot-size) / -2); margin-top: calc(var(--dot-size) / -2);
+  border-radius: 50%;
+  background: var(--dot-color);
+  box-shadow: 0 0 6px var(--dot-color);
+  animation-name: packet-travel;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+.packet-dot-malicious {
+  box-shadow: 0 0 12px var(--dot-color), 0 0 3px #fff;
+}
+@keyframes packet-travel {
+  from { transform: translate(var(--x0), var(--y0)); opacity: 0.95; }
+  to { transform: translate(var(--x1), var(--y1)); opacity: 0.1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .packet-dot { animation: none; transform: translate(var(--x1), var(--y1)); opacity: 0.5; }
+}
+
+/* ============================================================
+   Packet flow table
+   ============================================================ */
+.packet-flow {
+  display: flex; flex-direction: column;
+  max-height: 100%; overflow-y: auto;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  width: 100%;
+}
+.packet-row {
+  display: grid;
+  grid-template-columns: 68px 1fr 1fr 48px 56px 64px;
+  gap: 6px;
+  padding: 4px 10px;
+  border-bottom: 1px solid var(--border-soft);
+  align-items: center;
+  color: var(--text-dim);
+}
+.packet-row-head {
+  color: var(--text-faint);
+  font-size: 9.5px;
+  letter-spacing: 0.3px;
+  position: sticky; top: 0;
+  background: var(--bg-panel);
+  z-index: 1;
+}
+.packet-time { color: var(--text-faint); }
+.packet-addr { overflow-wrap: anywhere; }
+.packet-tag { font-size: 9px; padding: 1px 5px; border-radius: 999px; border: 1px solid currentColor; justify-self: start; }
+.packet-tag-scenario { color: var(--sev-critical); }
+.packet-tag-agent { color: var(--sev-high); }
+.packet-tag-live { color: var(--accent); }
+.packet-tag-background { color: var(--text-faint); }
+.packet-row-malicious { border-left: 2px solid var(--sev-critical); background: color-mix(in srgb, var(--sev-critical) 6%, transparent); }
+
+/* ============================================================
+   Response console: action cards
+   ============================================================ */
+.action-card {
+  background: var(--bg-panel-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 9px 11px;
+}
+.action-card-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.action-card-title { font-size: 12px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+.action-card-meta { font-family: var(--font-mono); font-size: 10.5px; color: var(--text-faint); margin-top: 4px; overflow-wrap: anywhere; }
+.action-card-reason { font-size: 11px; color: var(--sev-medium); margin-top: 4px; line-height: 1.4; }
+.action-card-buttons { display: flex; gap: 8px; margin-top: 8px; }
+.action-card-buttons .live-btn { flex: 1; text-align: center; padding: 5px 10px; }
+
+/* ============================================================
+   Fleet panel (connected agents)
+   ============================================================ */
+.fleet-connect-card {
+  background: var(--bg-inset);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px;
+}
+.fleet-command {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--accent);
+  background: var(--bg);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius);
+  padding: 6px 8px;
+  overflow-wrap: anywhere;
+}
+.fleet-online-dot {
+  width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+  background: var(--text-faint); display: inline-block;
+}
+.fleet-online-dot.on { background: var(--sev-low); box-shadow: 0 0 5px var(--sev-low); }
+.fleet-role-btn { flex: 1; text-transform: capitalize; padding: 4px 6px; font-size: 11px; }
+.fleet-role-active-enterprise { border-color: var(--sev-low); color: var(--sev-low); }
+.fleet-role-active-attacker { border-color: var(--sev-critical); color: var(--sev-critical); }
+.fleet-role-active-unknown { border-color: var(--text-faint); color: var(--text-faint); }
+
+/* ============================================================
+   Present mode
+   ============================================================ */
+.present-overlay {
+  position: fixed; inset: 0; z-index: 1000;
+  background: var(--bg);
+  display: grid;
+  grid-template-rows: auto 1fr auto auto;
+}
+.present-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-panel);
+}
+.present-map { min-height: 0; padding: 12px; }
+.present-caption {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 24px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-panel);
+}
+.present-caption-time { font-family: var(--font-mono); font-size: 11px; color: var(--text-faint); }
+.present-caption-text { font-size: 13px; color: var(--text); }
+.present-summary {
+  padding: 16px 24px;
+  border-top: 1px solid var(--border);
+  background: var(--bg-panel);
+}
+.present-scrubber {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 20px;
+  border-top: 1px solid var(--border-soft);
+  background: var(--bg-panel-raised);
+}
+.present-scrub-range { flex: 1; accent-color: var(--accent); }
+
+/* ============================================================
+   Scrollbars (webkit) — kept subtle
+   ============================================================ */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-faint); }

@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+backend/garuda.db
+backend/venv/
+frontend/node_modules/
+frontend/dist/
+.DS_Store
+backend/ml_training/data/
